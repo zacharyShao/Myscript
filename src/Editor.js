@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { editorLogger as logger } from './configuration/LoggerConfig';
+import {editorLogger as logger} from './configuration/LoggerConfig';
 import * as DefaultBehaviors from './configuration/DefaultBehaviors';
 import * as DefaultConfiguration from './configuration/DefaultConfiguration';
 import * as DefaultStyles from './configuration/DefaultPenStyle';
@@ -9,10 +9,10 @@ import * as UndoRedoContext from './model/UndoRedoContext';
 import * as UndoRedoManager from './model/UndoRedoManager';
 import * as ModelStats from './util/ModelStats';
 import * as ImageRenderer from './renderer/canvas/ImageRenderer';
-import * as RecognizerContext from './model/RecognizerContext';
-import * as SmartGuide from './smartguide/SmartGuide';
+// import * as RecognizerContext from './model/RecognizerContext';
+// import * as SmartGuide from './smartguide/SmartGuide';
 import Constants from './configuration/Constants';
-import { inkImporter } from './eastereggs/InkImporter';
+import {inkImporter} from './eastereggs/InkImporter';
 
 
 /**
@@ -87,18 +87,18 @@ function triggerCallbacks(editor, data, ...types) {
  */
 function manageResetState(resetFunc, func, recognizerContext, model, callback, ...params) {
   // If strokes moved in the undo redo stack then a clear is mandatory before sending strokes.
-  if (resetFunc && RecognizerContext.isResetRequired(recognizerContext, model)) {
-    logger.debug('Reset is needed');
-    resetFunc(recognizerContext, model, (err, resetedModel, ...types) => {
-      if (err) {
-        callback(err, resetedModel, ...types);
-      } else {
-        func(recognizerContext, resetedModel, callback, ...params);
-      }
-    });
-  } else {
-    func(recognizerContext, model, callback, ...params);
-  }
+  // if (resetFunc && RecognizerContext.isResetRequired(recognizerContext, model)) {
+  //   logger.debug('Reset is needed');
+  //   resetFunc(recognizerContext, model, (err, resetedModel, ...types) => {
+  //     if (err) {
+  //       callback(err, resetedModel, ...types);
+  //     } else {
+  //       func(recognizerContext, resetedModel, callback, ...params);
+  //     }
+  //   });
+  // } else {
+  //   func(recognizerContext, model, callback, ...params);
+  // }
 }
 
 /**
@@ -141,23 +141,23 @@ function manageRecognizedModel(editor, model, ...types) {
     }
     triggerCallbacks(editor, undefined, ...types);
   }
-
-  if (editor.configuration.recognitionParams.type === 'TEXT'
-    && editor.configuration.recognitionParams.apiVersion === 'V4'
-    && editor.configuration.recognitionParams.protocol !== 'REST'
-    && editor.configuration.recognitionParams.v4.text.mimeTypes.includes(Constants.Exports.JIIX)
-    && editor.configuration.recognitionParams.v4.text.smartGuide) {
-    // eslint-disable-next-line no-use-before-define
-    launchSmartGuide(editorRef, modelRef.exports);
-  }
-
-  if ((InkModel.extractPendingStrokes(model).length > 0) &&
-    (!editor.recognizer.addStrokes) && // FIXME: Ugly hack to avoid double export (addStrokes + export)
-    (editor.configuration.triggers.exportContent !== Constants.Trigger.DEMAND)) {
-    /* eslint-disable no-use-before-define */
-    launchExport(editor, model);
-    /* eslint-enable no-use-before-define */
-  }
+  // comment by zark.s
+  // if (editor.configuration.recognitionParams.type === 'TEXT'
+  //   && editor.configuration.recognitionParams.apiVersion === 'V4'
+  //   && editor.configuration.recognitionParams.protocol !== 'REST'
+  //   && editor.configuration.recognitionParams.v4.text.mimeTypes.includes(Constants.Exports.JIIX)
+  //   && editor.configuration.recognitionParams.v4.text.smartGuide) {
+  //   // eslint-disable-next-line no-use-before-define
+  //   launchSmartGuide(editorRef, modelRef.exports);
+  // }
+  //
+  // if ((InkModel.extractPendingStrokes(model).length > 0) &&
+  //   (!editor.recognizer.addStrokes) && // FIXME: Ugly hack to avoid double export (addStrokes + export)
+  //   (editor.configuration.triggers.exportContent !== Constants.Trigger.DEMAND)) {
+  //   /* eslint-disable no-use-before-define */
+  //   launchExport(editor, model);
+  //   /* eslint-enable no-use-before-define */
+  // }
 }
 
 /**
@@ -170,41 +170,41 @@ function manageRecognizedModel(editor, model, ...types) {
 function recognizerCallback(editor, error, model, ...events) {
   const editorRef = editor;
 
-  const handleResult = (err, res, ...types) => {
-    if (err) {
-      if (err.type !== 'close') {
-        logger.error('Error while firing the recognition', err.stack || err); // Handle any error from all above steps
-      }
-      if ((err.message === 'Invalid application key.') || (err.message === 'Invalid HMAC') ||
-      (err.error &&
-        err.error.result &&
-        err.error.result.error &&
-        (err.error.result.error === 'InvalidApplicationKeyException' || err.error.result.error === 'InvalidHMACSignatureException')
-      )) {
-        editorRef.error.innerText = Constants.Error.WRONG_CREDENTIALS;
-      } else if (err.message === 'Session is too old. Max Session Duration Reached') {
-        editorRef.error.innerText = Constants.Error.TOO_OLD;
-      } else if (err.message && editorRef.error.style.display === 'none') {
-        editorRef.error.innerText = Constants.Error.NOT_REACHABLE;
-      }
-      if ((editorRef.error.innerText === Constants.Error.TOO_OLD || err.code === 1006 || err.reason === 'CLOSE_RECOGNIZER') && RecognizerContext.canReconnect(editor.recognizerContext)) {
-        logger.info('Reconnection is available', err.stack || err);
-        editorRef.error.style.display = 'none';
-      } else {
-        editorRef.error.style.display = 'initial';
-        triggerCallbacks(editor, err, Constants.EventType.ERROR, ...types);
-      }
-    } else {
-      manageRecognizedModel(editorRef, res, ...[...events, ...types].filter((el, i, a) => i === a.indexOf(el))); // Remove duplicate events
-    }
-  };
+  // const handleResult = (err, res, ...types) => {
+  //   if (err) {
+  //     if (err.type !== 'close') {
+  //       logger.error('Error while firing the recognition', err.stack || err); // Handle any error from all above steps
+  //     }
+  //     if ((err.message === 'Invalid application key.') || (err.message === 'Invalid HMAC') ||
+  //     (err.error &&
+  //       err.error.result &&
+  //       err.error.result.error &&
+  //       (err.error.result.error === 'InvalidApplicationKeyException' || err.error.result.error === 'InvalidHMACSignatureException')
+  //     )) {
+  //       editorRef.error.innerText = Constants.Error.WRONG_CREDENTIALS;
+  //     } else if (err.message === 'Session is too old. Max Session Duration Reached') {
+  //       editorRef.error.innerText = Constants.Error.TOO_OLD;
+  //     } else if (err.message && editorRef.error.style.display === 'none') {
+  //       editorRef.error.innerText = Constants.Error.NOT_REACHABLE;
+  //     }
+  //     if ((editorRef.error.innerText === Constants.Error.TOO_OLD || err.code === 1006 || err.reason === 'CLOSE_RECOGNIZER') && RecognizerContext.canReconnect(editor.recognizerContext)) {
+  //       logger.info('Reconnection is available', err.stack || err);
+  //       editorRef.error.style.display = 'none';
+  //     } else {
+  //       editorRef.error.style.display = 'initial';
+  //       triggerCallbacks(editor, err, Constants.EventType.ERROR, ...types);
+  //     }
+  //   } else {
+  //     manageRecognizedModel(editorRef, res, ...[...events, ...types].filter((el, i, a) => i === a.indexOf(el))); // Remove duplicate events
+  //   }
+  // };
 
-  logger.debug('recognition callback');
-  if (editor.undoRedoManager.updateModel && !error) {
-    editor.undoRedoManager.updateModel(editor.undoRedoContext, model, handleResult);
-  } else {
-    handleResult(error, model, ...events);
-  }
+  // logger.debug('recognition callback');
+  // if (editor.undoRedoManager.updateModel && !error) {
+  //   editor.undoRedoManager.updateModel(editor.undoRedoContext, model, handleResult);
+  // } else {
+  //   handleResult(error, model, ...events);
+  // }
 }
 
 /**
@@ -233,8 +233,8 @@ function addStrokes(editor, model, trigger = editor.configuration.triggers.addSt
  * @param {Object} exports
  */
 function launchSmartGuide(editor, exports) {
-  const editorRef = editor;
-  editorRef.smartGuide = SmartGuide.launchSmartGuide(editor.smartGuide, exports);
+  // const editorRef = editor;
+  // editorRef.smartGuide = SmartGuide.launchSmartGuide(editor.smartGuide, exports);
 }
 
 /**
@@ -341,19 +341,19 @@ function launchConfig(editor, model) {
  * @param {Model} model
  */
 function launchResize(editor, model) {
-  if (editor.recognizer && editor.recognizer.resize) {
-    editor.recognizerContext.initPromise
-      .then(() => {
-        const editorRef = editor;
-        window.clearTimeout(editor.resizeTimer);
-        editorRef.resizeTimer = window.setTimeout(() => {
-          editor.recognizer.resize(editor.recognizerContext, model, editor.domElement, (err, res, ...types) => {
-            recognizerCallback(editor, err, res, ...types);
-          });
-        }, editor.configuration.resizeTriggerDelay);
-      });
-    SmartGuide.resize(editor.smartGuide);
-  }
+  // if (editor.recognizer && editor.recognizer.resize) {
+  //   editor.recognizerContext.initPromise
+  //     .then(() => {
+  //       const editorRef = editor;
+  //       window.clearTimeout(editor.resizeTimer);
+  //       editorRef.resizeTimer = window.setTimeout(() => {
+  //         editor.recognizer.resize(editor.recognizerContext, model, editor.domElement, (err, res, ...types) => {
+  //           recognizerCallback(editor, err, res, ...types);
+  //         });
+  //       }, editor.configuration.resizeTriggerDelay);
+  //     });
+  //   SmartGuide.resize(editor.smartGuide);
+  // }
 }
 
 /**
@@ -474,7 +474,7 @@ export class Editor {
      */
     this.innerBehaviors = DefaultBehaviors.overrideDefaultBehaviors(behaviors);
     this.configuration = configuration;
-    this.smartGuide = SmartGuide.createSmartGuide(this);
+    // this.smartGuide = SmartGuide.createSmartGuide(this);
 
     /**
      * Pen color used only for pending stroke
@@ -633,25 +633,25 @@ export class Editor {
        * @private
        * @type {Recognizer}
        */
-      this.innerRecognizer = recognizer;
-      if (this.innerRecognizer) {
-        /**
-         * Current recognition context
-         * @type {RecognizerContext}
-         */
-        this.recognizerContext = RecognizerContext.createEmptyRecognizerContext(this);
-        // FIXME: merge undo/redo manager with default recognizer
-        if (this.innerRecognizer.undo && this.innerRecognizer.redo && this.innerRecognizer.clear) {
-          this.undoRedoContext = this.recognizerContext;
-          this.undoRedoManager = this.innerRecognizer;
-        }
-
-        this.innerRecognizer.init(this.recognizerContext, model, (err, res, ...types) => {
-          logger.debug('Recognizer initialized', res);
-          this.loader.style.display = 'none';
-          recognizerCallback(this, err, res, ...types);
-        });
-      }
+      // this.innerRecognizer = recognizer;
+      // if (this.innerRecognizer) {
+      //   /**
+      //    * Current recognition context
+      //    * @type {RecognizerContext}
+      //    */
+      //   this.recognizerContext = RecognizerContext.createEmptyRecognizerContext(this);
+      //   // FIXME: merge undo/redo manager with default recognizer
+      //   if (this.innerRecognizer.undo && this.innerRecognizer.redo && this.innerRecognizer.clear) {
+      //     this.undoRedoContext = this.recognizerContext;
+      //     this.undoRedoManager = this.innerRecognizer;
+      //   }
+      //
+      //   this.innerRecognizer.init(this.recognizerContext, model, (err, res, ...types) => {
+      //     logger.debug('Recognizer initialized', res);
+      //     this.loader.style.display = 'none';
+      //     recognizerCallback(this, err, res, ...types);
+      //   });
+      // }
     };
 
     if (recognizer) {
@@ -774,7 +774,10 @@ export class Editor {
     logger.trace('Pointer down', point);
     window.clearTimeout(this.notifyTimer);
     window.clearTimeout(this.exportTimer);
-    this.model = InkModel.initPendingStroke(this.model, point, Object.assign({ pointerType, pointerId }, this.theme.ink, this.localPenStyle));
+    this.model = InkModel.initPendingStroke(this.model, point, Object.assign({
+      pointerType,
+      pointerId
+    }, this.theme.ink, this.localPenStyle));
     this.renderer.drawCurrentStroke(this.rendererContext, this.model, this.stroker);
     // Currently no recognition on pointer down
   }
@@ -990,7 +993,7 @@ export class Editor {
    */
   import_(data, mimetype) {
     triggerCallbacks(this, undefined, Constants.EventType.IMPORT);
-    launchImport(this, this.model, !(data instanceof Blob) ? new Blob([data], { type: mimetype }) : data);
+    launchImport(this, this.model, !(data instanceof Blob) ? new Blob([data], {type: mimetype}) : data);
   }
 
   /**
@@ -1005,7 +1008,8 @@ export class Editor {
    * @param {PointerEvents} events
    */
   pointerEvents(events) {
-    launchPointerEvents(this, this.model, events);
+    // comment by zark.s
+    // launchPointerEvents(this, this.model, events);
   }
 
   /**
@@ -1026,7 +1030,7 @@ export class Editor {
   resize() {
     logger.debug('Resizing editor');
     this.renderer.resize(this.rendererContext, this.model, this.stroker, this.configuration.renderingParams.minHeight, this.configuration.renderingParams.minWidth);
-    launchResize(this, this.model);
+    // launchResize(this, this.model);
   }
 
   /**
@@ -1052,7 +1056,8 @@ export class Editor {
    * @returns {{inkImporter: inkImporter}}
    */
   get eastereggs() {
-    return { inkImporter };
+    return {inkImporter};
   }
+
   /* eslint-enable class-methods-use-this */
 }
